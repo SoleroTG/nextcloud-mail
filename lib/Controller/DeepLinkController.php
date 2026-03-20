@@ -17,6 +17,7 @@ use OCP\AppFramework\Http\RedirectResponse;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
+use Psr\Log\LoggerInterface;
 
 class DeepLinkController extends Controller {
 	private MailAccountMapper $mailAccountMapper;
@@ -24,6 +25,7 @@ class DeepLinkController extends Controller {
 	private MessageMapper $messageMapper;
 	private IURLGenerator $urlGenerator;
 	private IUserSession $userSession;
+	private LoggerInterface $logger;
 
 	public function __construct(
 		string $appName,
@@ -32,7 +34,8 @@ class DeepLinkController extends Controller {
 		AccountService $accountService,
 		MessageMapper $messageMapper,
 		IURLGenerator $urlGenerator,
-		IUserSession $userSession
+		IUserSession $userSession,
+		LoggerInterface $logger
 	) {
 		parent::__construct($appName, $request);
 		$this->mailAccountMapper = $mailAccountMapper;
@@ -40,6 +43,7 @@ class DeepLinkController extends Controller {
 		$this->messageMapper = $messageMapper;
 		$this->urlGenerator = $urlGenerator;
 		$this->userSession = $userSession;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -83,7 +87,10 @@ class DeepLinkController extends Controller {
 				}
 			}
 		} catch (\Exception $e) {
-			// Fall through to fallback
+			$this->logger->error('DeepLinkController: An unexpected error occurred.', [
+				'exception' => $e,
+				'messageId' => $messageId,
+			]);
 		}
 
 		// Fallback

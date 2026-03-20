@@ -16,21 +16,6 @@ return [
 			'verb' => 'GET',
 		],
 		[
-			'name' => 'deep_link#open',
-			'url' => '/open/{messageId}',
-			'verb' => 'GET',
-		],
-		[
-			'name' => 'deep_link#open',
-			'url' => '/open/{messageId}',
-			'verb' => 'GET',
-		],
-		[
-			'name' => 'deep_link#open',
-			'url' => '/open/{messageId}',
-			'verb' => 'GET',
-		],
-		[
 			'name' => 'page#index',
 			'url' => '/',
 			'verb' => 'GET'
