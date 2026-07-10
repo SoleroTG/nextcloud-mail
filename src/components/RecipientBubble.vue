@@ -65,6 +65,17 @@
 						</template>
 						{{ t('mail', 'Copy to clipboard') }}
 					</ButtonVue>
+					<ButtonVue
+						v-if="account && !isExistingAliasOrAccount"
+						v-close-popover
+						type="tertiary-no-background"
+						:aria-label="t('mail', 'Register as alias')"
+						@click="onClickRegisterAsAlias">
+						<template #icon>
+							<IconAddAlias :size="20" />
+						</template>
+						{{ t('mail', 'Register as alias') }}
+					</ButtonVue>
 				</div>
 				<div v-else class="contact-input-wrapper">
 					<NcSelect
@@ -122,6 +133,7 @@ import IconUser from 'vue-material-design-icons/AccountOutline.vue'
 import IconCheck from 'vue-material-design-icons/Check.vue'
 import IconClipboard from 'vue-material-design-icons/ClipboardTextOutline.vue'
 import IconClose from 'vue-material-design-icons/CloseOutline.vue'
+import IconAddAlias from 'vue-material-design-icons/EmailPlusOutline.vue'
 import IconDetails from 'vue-material-design-icons/InformationOutline.vue'
 import IconAdd from 'vue-material-design-icons/Plus.vue'
 import IconReply from 'vue-material-design-icons/ReplyOutline.vue'
@@ -147,6 +159,7 @@ export default {
 		IconClipboard,
 		IconDetails,
 		IconCheck,
+		IconAddAlias,
 	},
 
 	props: {
@@ -163,6 +176,12 @@ export default {
 		size: {
 			type: Number,
 			default: 26,
+		},
+
+		account: {
+			type: Object,
+			required: false,
+			default: null,
 		},
 	},
 
@@ -209,6 +228,18 @@ export default {
 		addButtonDisabled() {
 			return !((this.selection === ContactSelectionStateEnum.existing && this.selectedContact)
 				|| (this.selection === ContactSelectionStateEnum.new && this.newContactName.trim() !== ''))
+		},
+
+		isExistingAliasOrAccount() {
+			const accounts = this.mainStore.accounts || []
+			const emailLower = this.email.toLowerCase()
+			return accounts.some((account) => {
+				if (account.emailAddress.toLowerCase() === emailLower) {
+					return true
+				}
+				const aliases = account.aliases || []
+				return aliases.some((alias) => alias.alias.toLowerCase() === emailLower)
+			})
 		},
 	},
 
@@ -276,6 +307,23 @@ export default {
 			debouncedSearch(term).then((results) => {
 				this.autoCompleteContacts = uniqBy('id')(this.autoCompleteContacts.concat(results))
 			})
+		},
+
+		async onClickRegisterAsAlias() {
+			if (!this.account) {
+				return
+			}
+			try {
+				await this.mainStore.createAlias({
+					account: this.account,
+					alias: this.email,
+					name: this.account.name,
+				})
+				showSuccess(t('mail', 'Alias created'))
+			} catch (error) {
+				logger.error('Could not register alias', { error })
+				showError(t('mail', 'Could not register alias'))
+			}
 		},
 	},
 }

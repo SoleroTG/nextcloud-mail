@@ -808,7 +808,24 @@ export default {
 					smimeCertificateId: account.smimeCertificateId,
 					selectable: account.connectionStatus,
 				},
-				account.aliases.map((alias) => {
+				[...account.aliases].sort((a, b) => {
+					const emailA = a.alias || ''
+					const emailB = b.alias || ''
+
+					const atIdxA = emailA.lastIndexOf('@')
+					const domainA = atIdxA !== -1 ? emailA.substring(atIdxA + 1).toLowerCase() : ''
+					const localA = atIdxA !== -1 ? emailA.substring(0, atIdxA).toLowerCase() : emailA.toLowerCase()
+
+					const atIdxB = emailB.lastIndexOf('@')
+					const domainB = atIdxB !== -1 ? emailB.substring(atIdxB + 1).toLowerCase() : ''
+					const localB = atIdxB !== -1 ? emailB.substring(0, atIdxB).toLowerCase() : emailB.toLowerCase()
+
+					const domainCompare = domainA.localeCompare(domainB)
+					if (domainCompare !== 0) {
+						return domainCompare
+					}
+					return localA.localeCompare(localB)
+				}).map((alias) => {
 					return {
 						id: account.id,
 						aliasId: alias.id,
